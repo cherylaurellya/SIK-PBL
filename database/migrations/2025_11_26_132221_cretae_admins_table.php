@@ -11,17 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-    Schema::table('users', function (Blueprint $table) {
-        $table->string('role')->default('pasien'); // default pasien
-    });
+        Schema::create('admins', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+    // Tambahkan field admin lain jika perlu
+    $table->timestamps();
+});
     }
+
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-    Schema::table('users', function (Blueprint $table) {
-        $table->dropColumn('role');
-    });
+        Schema::dropIfExists('admins');
     }
-    };
+};
