@@ -22,10 +22,12 @@ class DokterController extends Controller
     {
         $user = Auth::user();
         
+        // Cek validasi dokter
         if (!$user->dokter) {
             return redirect()->route('login')->with('error', 'Akun tidak valid sebagai dokter.');
         }
 
+        // Ambil pasien yang SUDAH diperiksa hari ini
         $sudahDiperiksa = RekamMedis::whereDate('tanggal', Carbon::today())
                             ->where('dokter_id', $user->dokter->id)
                             ->with('pasien.user')
@@ -33,6 +35,9 @@ class DokterController extends Controller
 
         $idPasienSudah = $sudahDiperiksa->pluck('pasien_id')->toArray();
 
+        // Ambil pasien yang BELUM diperiksa (Antrian)
+        // Asumsi: Semua pasien yang tidak ada di rekam medis hari ini adalah antrian
+        // (Nanti bisa diperbaiki logikanya dengan tabel pendaftaran khusus jika ada)
         $antrian = Pasien::whereNotIn('id', $idPasienSudah)
                     ->with('user')
                     ->get();
@@ -60,12 +65,13 @@ class DokterController extends Controller
 
     public function store(Request $request)
     {
+        // PERBAIKAN: Menyesuaikan nama input dengan View (sip & spesialis)
         $request->validate([
             'name' => 'required|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:8',
-            'spesialisasi' => 'required|string',
-            'no_str' => 'required|string', // Nomor Surat Tanda Registrasi
+            'spesialis' => 'required|string', // Ganti spesialisasi jadi spesialis
+            'sip' => 'required|string',       // Ganti no_str jadi sip
         ]);
 
         DB::beginTransaction();
@@ -81,8 +87,8 @@ class DokterController extends Controller
             // 2. Buat Data Detail Dokter
             Dokter::create([
                 'user_id' => $user->id,
-                'spesialisasi' => $request->spesialisasi,
-                'no_str' => $request->no_str,
+                'spesialis' => $request->spesialis, // Sesuaikan
+                'sip' => $request->sip,             // Sesuaikan
             ]);
 
             DB::commit();
@@ -107,8 +113,8 @@ class DokterController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => "required|email|unique:users,email,$dokter->user_id",
-            'spesialisasi' => 'required',
-            'no_str' => 'required',
+            'spesialis' => 'required', // Sesuaikan
+            'sip' => 'required',       // Sesuaikan
         ]);
 
         DB::beginTransaction();
@@ -120,12 +126,15 @@ class DokterController extends Controller
             $dokter->user->update($dataUser);
 
             $dokter->update([
-                'spesialisasi' => $request->spesialisasi,
-                'no_str' => $request->no_str
+                'spesialis' => $request->spesialis, // Sesuaikan
+                'sip' => $request->sip              // Sesuaikan
             ]);
 
             DB::commit();
+            
+            // Redirect ke INDEX (Tabel), bukan kembali ke form edit
             return redirect()->route('admin.dokter.index')->with('success', 'Data Dokter diperbarui.');
+            
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Gagal update: ' . $e->getMessage()]);
@@ -135,7 +144,7 @@ class DokterController extends Controller
     public function destroy($id)
     {
         $dokter = Dokter::findOrFail($id);
-        $dokter->user->delete(); // Hapus user (dokter ikut terhapus cascade)
+        $dokter->user->delete(); 
         return redirect()->route('admin.dokter.index')->with('success', 'Data Dokter dihapus.');
     }
 }

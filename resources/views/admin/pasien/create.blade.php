@@ -1,71 +1,66 @@
-@extends('layouts.admin')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Tambah Pasien Baru') }}
+        </h2>
+    </x-slot>
 
-@section('content')
-<div class="container-fluid px-4">
-    <h1 class="mt-4">Tambah Pasien Baru</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="{{ route('admin.pasien.index') }}">Manajemen Pasien</a></li>
-        <li class="breadcrumb-item active">Tambah Baru</li>
-    </ol>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
 
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-user-plus me-1"></i> Form Data Pasien
-        </div>
-        <div class="card-body">
-            <!-- Menampilkan Error Validasi -->
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                    <form action="{{ route('admin.pasien.store') }}" method="POST">
+                        @csrf
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {{-- Nama --}}
+                            <div>
+                                <label for="name" class="block font-medium text-sm text-gray-700">Nama Lengkap</label>
+                                <input type="text" name="name" id="name" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                            </div>
+
+                            {{-- NIK --}}
+                            <div>
+                                <label for="nik" class="block font-medium text-sm text-gray-700">NIK (KTP)</label>
+                                <input type="text" name="nik" id="nik" maxlength="16" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                            </div>
+
+                            {{-- Email --}}
+                            <div>
+                                <label for="email" class="block font-medium text-sm text-gray-700">Email</label>
+                                <input type="email" name="email" id="email" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                            </div>
+
+                            {{-- Tanggal Lahir --}}
+                            <div>
+                                <label for="tanggal_lahir" class="block font-medium text-sm text-gray-700">Tanggal Lahir</label>
+                                <input type="date" name="tanggal_lahir" id="tanggal_lahir" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                            </div>
+
+                             {{-- Password --}}
+                             <div>
+                                <label for="password" class="block font-medium text-sm text-gray-700">Password</label>
+                                <input type="password" name="password" id="password" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                            </div>
+                        </div>
+
+                        {{-- Alamat --}}
+                        <div class="mt-4">
+                            <label for="alamat" class="block font-medium text-sm text-gray-700">Alamat Lengkap</label>
+                            <textarea name="alamat" id="alamat" rows="3" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required></textarea>
+                        </div>
+
+                        <div class="flex items-center justify-end mt-4">
+                            <a href="{{ route('admin.pasien.index') }}" class="text-gray-600 underline text-sm hover:text-gray-900 mr-4">Batal</a>
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                Simpan Pasien
+                            </button>
+                        </div>
+                    </form>
+
                 </div>
-            @endif
-
-            <form action="{{ route('admin.pasien.store') }}" method="POST">
-                @csrf
-                <div class="row">
-                    <!-- Kolom Kiri -->
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="name" class="form-label fw-bold">Nama Lengkap</label>
-                            <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" placeholder="Contoh: Ahmad Dahlan" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label fw-bold">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" placeholder="email@contoh.com" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label fw-bold">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required placeholder="Minimal 8 karakter">
-                        </div>
-                    </div>
-
-                    <!-- Kolom Kanan -->
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="nik" class="form-label fw-bold">NIK (Nomor Induk Kependudukan)</label>
-                            <input type="text" class="form-control" id="nik" name="nik" value="{{ old('nik') }}" maxlength="16" placeholder="16 digit angka" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="tanggal_lahir" class="form-label fw-bold">Tanggal Lahir</label>
-                            <input type="date" class="form-control" id="tanggal_lahir" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="alamat" class="form-label fw-bold">Alamat Lengkap</label>
-                            <textarea class="form-control" id="alamat" name="alamat" rows="3" required>{{ old('alamat') }}</textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-end mt-3">
-                    <a href="{{ route('admin.pasien.index') }}" class="btn btn-secondary me-2">Batal</a>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan Data</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>

@@ -1,68 +1,96 @@
-@extends('layouts.admin')
-
-@section('content')
-<div class="container-fluid px-4">
-    <h1 class="mt-4">Manajemen Dokter</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-        <li class="breadcrumb-item active">Data Dokter</li>
-    </ol>
-    
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-user-md me-1"></i> Daftar Dokter</div>
-            <a href="{{ route('admin.dokter.create') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus me-1"></i> Tambah Dokter
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Manajemen Data Dokter') }}
+            </h2>
+            <a href="{{ route('admin.dokter.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
+                + Tambah Dokter
             </a>
         </div>
-        <div class="card-body">
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            
+            {{-- Pesan Sukses --}}
             @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+                    <p>{{ session('success') }}</p>
                 </div>
             @endif
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>No</th>
-                            <th>Nama Dokter</th>
-                            <th>Spesialisasi</th>
-                            <th>No. STR</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($dokters as $idx => $dr)
-                        <tr>
-                            <td>{{ $idx + 1 }}</td>
-                            <td>{{ $dr->user->name ?? '-' }}</td>
-                            <td>{{ $dr->spesialisasi }}</td>
-                            <td>{{ $dr->no_str }}</td>
-                            <td>
-                                <a href="{{ route('admin.dokter.edit', $dr->id) }}" class="btn btn-warning btn-sm text-white">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{{ route('admin.dokter.destroy', $dr->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus dokter ini?');">
-                                    @csrf 
-                                    @method('DELETE')
-                                    <button class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="text-center text-muted">Belum ada data dokter.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Nama Dokter
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Email
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        SIP / Spesialis
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Aksi
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse($dokters as $dokter)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    {{-- Avatar Dummy --}}
+                                                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold">
+                                                        {{ substr($dokter->user->name ?? 'D', 0, 1) }}
+                                                    </div>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">
+                                                        {{ $dokter->user->name ?? 'User Tidak Ditemukan' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $dokter->user->email ?? '-' }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                {{ $dokter->spesialis ?? 'Umum' }}
+                                            </span>
+                                            <div class="text-xs text-gray-500 mt-1">SIP: {{ $dokter->sip ?? '-' }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <a href="{{ route('admin.dokter.edit', $dokter->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                            
+                                            <form action="{{ route('admin.dokter.destroy', $dokter->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus dokter ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                                            Belum ada data dokter. Silakan tambah data baru.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>

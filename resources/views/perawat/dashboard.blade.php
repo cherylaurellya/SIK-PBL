@@ -1,135 +1,62 @@
-@extends('layouts.admin')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Dashboard Perawat') }}
+        </h2>
+    </x-slot>
 
-@section('content')
-<div class="container-fluid px-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
-        <div>
-            <h1>Dashboard Perawat</h1>
-            <p class="text-muted mb-0">Halo, Ners {{ Auth::user()->name }}. Data ini terhubung langsung dengan Dokter.</p>
-        </div>
-        <div>
-            <span class="badge bg-info text-dark p-2"><i class="fas fa-calendar-alt me-1"></i> {{ date('d M Y') }}</span>
-        </div>
-    </div>
-
-    <!-- Ringkasan Statistik Realtime -->
-    <div class="row">
-        <div class="col-xl-4 col-md-6">
-            <div class="card bg-primary text-white mb-4 shadow-sm">
-                <div class="card-body d-flex align-items-center justify-content-between">
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            
+            {{-- 1. HEADER SAMBUTAN --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 text-gray-900 flex justify-between items-center">
                     <div>
-                        <h2 class="mb-0">{{ $totalAntrian }}</h2>
-                        <div class="small">Pasien Menunggu Dokter</div>
+                        <h3 class="text-lg font-bold">Halo, Perawat {{ Auth::user()->name }}!</h3>
+                        <p class="text-gray-600">Selamat bertugas. Semoga hari Anda menyenangkan.</p>
                     </div>
-                    <i class="fas fa-users fa-2x opacity-50"></i>
+                    <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded border border-purple-400">
+                        Staff Medis
+                    </span>
                 </div>
             </div>
-        </div>
-        <div class="col-xl-4 col-md-6">
-            <div class="card bg-success text-white mb-4 shadow-sm">
-                <div class="card-body d-flex align-items-center justify-content-between">
-                    <div>
-                        <h2 class="mb-0">{{ $totalSelesai }}</h2>
-                        <div class="small">Pasien Selesai Diperiksa</div>
-                    </div>
-                    <i class="fas fa-check-circle fa-2x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-4 col-md-6">
-            <div class="card bg-warning text-dark mb-4 shadow-sm">
-                <div class="card-body d-flex align-items-center justify-content-between">
-                    <div>
-                        <h2 class="mb-0">{{ $dokterPraktek }}</h2>
-                        <div class="small">Dokter Standby</div>
-                    </div>
-                    <i class="fas fa-user-md fa-2x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="row">
-        <!-- Tabel Antrian Realtime -->
-        <div class="col-lg-8">
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header bg-white">
-                    <i class="fas fa-list-alt me-1 text-primary"></i>
-                    Status Antrian Pasien (Realtime)
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Nama Pasien</th>
-                                    <th>NIK</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {{-- 1. LIST PASIEN MENUNGGU (Belum diperiksa dokter) --}}
-                                @foreach($antrian as $pasien)
-                                <tr>
-                                    <td class="fw-bold">{{ $pasien->user->name }}</td>
-                                    <td>{{ $pasien->nik }}</td>
-                                    <td><span class="badge bg-warning text-dark">Menunggu Dokter</span></td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm"><i class="fas fa-bullhorn"></i> Panggil</button>
-                                    </td>
-                                </tr>
-                                @endforeach
-
-                                {{-- 2. LIST PASIEN SELESAI (Sudah diperiksa dokter hari ini) --}}
-                                @foreach($selesai as $rekam)
-                                <tr class="table-success opacity-75">
-                                    <td>{{ $rekam->pasien->user->name }}</td>
-                                    <td>{{ $rekam->pasien->nik }}</td>
-                                    <td>
-                                        <span class="badge bg-success">Selesai</span>
-                                        <small class="d-block text-muted">Dr. {{ $rekam->dokter->user->name }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="text-success"><i class="fas fa-check"></i> Tuntas</span>
-                                    </td>
-                                </tr>
-                                @endforeach
-
-                                @if($antrian->isEmpty() && $selesai->isEmpty())
-                                <tr>
-                                    <td colspan="4" class="text-center py-4 text-muted">Belum ada data pasien hari ini.</td>
-                                </tr>
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Menu Cepat -->
-        <div class="col-lg-4">
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header">
-                    <i class="fas fa-cogs me-1"></i>
-                    Tugas Perawat
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <p class="small text-muted">Jika ada pasien baru datang, daftarkan disini agar masuk ke antrian Dokter.</p>
-                        <!-- Ini tombol kuncinya: Menambah Pasien Baru -->
-                        <a href="{{ route('admin.pasien.create') }}" class="btn btn-outline-primary text-start">
-                            <i class="fas fa-user-plus me-2"></i> 1. Daftarkan Pasien Baru
-                        </a>
-                        <div class="alert alert-info small mt-2">
-                            <i class="fas fa-info-circle"></i> Setelah didaftarkan, pasien akan otomatis muncul di tabel antrian (kiri) dan di <strong>Dashboard Dokter</strong>.
+            {{-- 2. MENU CEPAT --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {{-- Card Jadwal Dokter --}}
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-indigo-500">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-indigo-100 text-indigo-500 mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold text-gray-800">Cek Jadwal Dokter</h4>
+                            <p class="text-sm text-gray-500 mb-2">Lihat jadwal praktik dokter hari ini.</p>
+                            <a href="{{ route('perawat.jadwal-dokter.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-semibold">Lihat Jadwal &rarr;</a>
                         </div>
                     </div>
                 </div>
+
+                {{-- Card Pasien (Contoh Fitur Masa Depan) --}}
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-green-500">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold text-gray-800">Data Pasien</h4>
+                            <p class="text-sm text-gray-500 mb-2">Kelola antrian atau data vital pasien.</p>
+                            <span class="text-gray-400 text-xs italic">(Segera Hadir)</span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>
