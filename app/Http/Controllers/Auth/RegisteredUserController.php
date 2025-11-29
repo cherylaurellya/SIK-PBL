@@ -29,22 +29,29 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // 1. Validasi Input
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // 2. Buat User Baru (Dengan Role Pasien)
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'pasien', // <--- BAGIAN PENTING: Set otomatis jadi pasien
         ]);
 
+        // 3. Trigger Event Registered
         event(new Registered($user));
 
+        // 4. Login Otomatis
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // 5. Redirect ke Dashboard Pasien (Bukan Dashboard Admin/Umum)
+        // Pastikan di routes/web.php ada route dengan name 'pasien.dashboard'
+        return redirect()->route('pasien.dashboard');
     }
 }
