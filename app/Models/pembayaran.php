@@ -2,16 +2,24 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Pembayaran extends Model
 {
-    protected $fillable = ['pasien_id', 'rekam_medis_id', 'total_biaya', 'tanggal_bayar', 'status'];
+    use HasFactory;
 
-    public function pasien() {
-        return $this->belongsTo(Pasien::class);
-    }
-    public function rekamMedis() {
+    // DAFTAR KOLOM YANG BOLEH DIISI (Wajib sama dengan Controller)
+    protected $fillable = [
+        'rekam_medis_id',
+        'total_biaya',
+        'metode_pembayaran', // Penting! Jangan sampai ketinggalan
+        'status',
+    ];
+
+    // Relasi ke Rekam Medis
+    public function rekamMedis()
+    {
         return $this->belongsTo(RekamMedis::class);
     }
 }

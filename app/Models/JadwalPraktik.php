@@ -14,6 +14,12 @@ class JadwalPraktik extends Model
         'hari',
         'jam_mulai',
         'jam_selesai',
+        'status', // <<--- INI YANG HILANG, KINI DITAMBAHKAN
+    ];
+
+    // Opsional, tapi disarankan untuk memastikan penyimpanan tipe data numerik
+    protected $casts = [
+        'status' => 'integer', 
     ];
 
     // Relasi ke tabel Dokter

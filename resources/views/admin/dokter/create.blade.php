@@ -10,19 +10,31 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
 
+                    {{-- BLOK UNTUK MENAMPILKAN ERROR VALIDASI DARI CONTROLLER --}}
+                    @if ($errors->any())
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                            <strong class="font-bold">Gagal Menyimpan!</strong>
+                            <ul class="list-disc ml-5 mt-2">
+                                @foreach ($errors->all() as $error)
+                                    <li>- {{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <form action="{{ route('admin.dokter.store') }}" method="POST">
                         @csrf
 
                         {{-- Nama --}}
                         <div class="mb-4">
                             <label for="name" class="block font-medium text-sm text-gray-700">Nama Dokter</label>
-                            <input type="text" name="name" id="name" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                            <input type="text" name="name" id="name" value="{{ old('name') }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
                         </div>
 
                         {{-- Email --}}
                         <div class="mb-4">
                             <label for="email" class="block font-medium text-sm text-gray-700">Email Login</label>
-                            <input type="email" name="email" id="email" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                            <input type="email" name="email" id="email" value="{{ old('email') }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
                         </div>
 
                         {{-- Password --}}
@@ -34,7 +46,7 @@
                         {{-- NO STR --}}
                         <div class="mb-4">
                             <label for="no_str" class="block font-medium text-sm text-gray-700">Nomor STR</label>
-                            <input type="text" name="no_str" id="no_str" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                            <input type="text" name="no_str" id="no_str" value="{{ old('no_str') }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
                         </div>
 
                         {{-- Spesialisasi --}}

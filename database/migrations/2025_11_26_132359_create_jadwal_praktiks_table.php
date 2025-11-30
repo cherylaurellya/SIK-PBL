@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('jadwal_praktiks', function (Blueprint $table) {
             $table->id();
-            // Pastikan tabel 'dokters' sudah ada sebelumnya.
-            // Jika tabel dokter Anda bernama 'users' dengan role dokter, sesuaikan foreignId ini.
-            // Asumsi saat ini: Anda punya tabel 'dokters'.
             $table->foreignId('dokter_id')->constrained('dokters')->onDelete('cascade'); 
             $table->string('hari');
             $table->time('jam_mulai');
             $table->time('jam_selesai');
+            // FIX: Tambahkan kolom status di sini
+            $table->tinyInteger('status')->default(0); // 1=Aktif, 0=Libur (Default Libur)
             $table->timestamps();
         });
     }
@@ -29,6 +28,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('jadwal_praktiks');
+        // FIX: Pastikan method down HANYA menghapus tabel.
+        Schema::dropIfExists('jadwal_praktiks'); 
     }
 };

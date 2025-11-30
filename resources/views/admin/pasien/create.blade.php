@@ -10,6 +10,18 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
 
+                    {{-- Menampilkan Pesan Error --}}
+                    @if ($errors->any())
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                            <strong>Whoops!</strong> Ada masalah dengan inputan Anda.<br><br>
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>- {{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <form action="{{ route('admin.pasien.store') }}" method="POST">
                         @csrf
 
@@ -17,25 +29,25 @@
                             {{-- Nama --}}
                             <div>
                                 <label for="name" class="block font-medium text-sm text-gray-700">Nama Lengkap</label>
-                                <input type="text" name="name" id="name" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                                <input type="text" name="name" id="name" value="{{ old('name') }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
                             </div>
 
                             {{-- NIK --}}
                             <div>
                                 <label for="nik" class="block font-medium text-sm text-gray-700">NIK (KTP)</label>
-                                <input type="text" name="nik" id="nik" maxlength="16" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                                <input type="text" name="nik" id="nik" value="{{ old('nik') }}" maxlength="16" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
                             </div>
 
                             {{-- Email --}}
                             <div>
                                 <label for="email" class="block font-medium text-sm text-gray-700">Email</label>
-                                <input type="email" name="email" id="email" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                                <input type="email" name="email" id="email" value="{{ old('email') }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
                             </div>
 
                             {{-- Tanggal Lahir --}}
                             <div>
                                 <label for="tanggal_lahir" class="block font-medium text-sm text-gray-700">Tanggal Lahir</label>
-                                <input type="date" name="tanggal_lahir" id="tanggal_lahir" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                                <input type="date" name="tanggal_lahir" id="tanggal_lahir" value="{{ old('tanggal_lahir') }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
                             </div>
 
                              {{-- Password --}}
@@ -48,7 +60,7 @@
                         {{-- Alamat --}}
                         <div class="mt-4">
                             <label for="alamat" class="block font-medium text-sm text-gray-700">Alamat Lengkap</label>
-                            <textarea name="alamat" id="alamat" rows="3" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required></textarea>
+                            <textarea name="alamat" id="alamat" rows="3" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>{{ old('alamat') }}</textarea>
                         </div>
 
                         <div class="flex items-center justify-end mt-4">

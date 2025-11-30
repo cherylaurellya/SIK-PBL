@@ -2,69 +2,89 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Pasien;
 use App\Models\User;
-use App\Models\RekamMedis; // Import Model RekamMedis
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use App\Models\RekamMedis; // Diperlukan untuk dashboard
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class PasienController extends Controller
 {
-    // ==========================================
-    // BAGIAN UNTUK PASIEN (Dashboard)
-    // ==========================================
+    // ==========================================================
+    // BAGIAN 1: DASHBOARD PASIEN (Khusus Role Pasien)
+    // ==========================================================
+    
     public function dashboard()
     {
         $user = Auth::user();
+        // Ambil data detail Pasien. Gagal jika user tidak memiliki entry di tabel pasiens
+        $pasien = Pasien::where('user_id', $user->id)->firstOrFail(); 
+        
+        // 1. Ambil Riwayat Medis Lengkap
+        $riwayatMedis = RekamMedis::where('pasien_id', $pasien->id)
+                                    ->with('dokter.user')
+                                    ->orderBy('tanggal', 'desc')
+                                    ->get();
 
-        // Pastikan user punya data pasien
-        if (!$user->pasien) {
-             return view('pasien.dashboard', ['riwayat' => []]);
-        }
+        // 2. Hitung Statistik
+        $totalPemeriksaan = $riwayatMedis->count();
+        
+        // Menghitung kunjungan terakhir
+        $kunjunganTerakhir = $riwayatMedis->first() 
+                                ? Carbon::parse($riwayatMedis->first()->tanggal) 
+                                : null;
 
-        // Ambil riwayat rekam medis milik pasien ini
-        $riwayat = RekamMedis::where('pasien_id', $user->pasien->id)
-                    ->with('dokter.user')
-                    ->orderBy('tanggal', 'desc')
-                    ->get();
+        // 3. Ambil Riwayat Terbaru (Untuk ditampilkan ringkas di dashboard)
+        $riwayatTerbaru = $riwayatMedis->take(3);
 
-        return view('pasien.dashboard', compact('riwayat'));
+        // 4. Kirim data ke View
+        return view('pasien.dashboard', compact(
+            'user', 
+            'pasien',
+            'totalPemeriksaan',
+            'kunjunganTerakhir',
+            'riwayatTerbaru'
+        ));
     }
-
-    // ==========================================
-    // BAGIAN UNTUK ADMIN (CRUD Data Pasien)
-    // ==========================================
     
-    // Menampilkan semua pasien (Admin)
+    // ==========================================================
+    // BAGIAN 2: CRUD ADMIN (Manajemen Data Pasien)
+    // ==========================================================
+    
+    // Tampilkan daftar pasien (Admin)
     public function index()
     {
-        $pasiens = Pasien::with('user')->latest()->get();
+        $pasiens = Pasien::with('user')->get();
         return view('admin.pasien.index', compact('pasiens'));
     }
 
-    // Menampilkan form tambah pasien (Admin)
+    // [CREATE] Tampilkan form tambah pasien (Admin)
+    // METHOD INI HANYA BOLEH DIPANGGIL OLEH RUTE ADMIN.
     public function create()
     {
         return view('admin.pasien.create');
     }
 
-    // Menyimpan pasien baru (Admin)
+    // [STORE] Simpan data pasien baru (Admin)
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-            'nik' => 'required|string|size:16|unique:pasiens',
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:8',
+            'nik' => 'required|string|unique:pasiens',
             'alamat' => 'required|string',
             'tanggal_lahir' => 'required|date',
         ]);
 
         DB::beginTransaction();
         try {
+            // 1. Buat User Login (Role Pasien)
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -72,72 +92,82 @@ class PasienController extends Controller
                 'role' => 'pasien',
             ]);
 
-            $user->pasien()->create([
+            // 2. Buat Data Detail Pasien
+            Pasien::create([
+                'user_id' => $user->id,
                 'nik' => $request->nik,
                 'alamat' => $request->alamat,
                 'tanggal_lahir' => $request->tanggal_lahir,
             ]);
 
             DB::commit();
-            return redirect()->route('admin.pasien.index')->with('success', 'Pasien berhasil ditambahkan.');
+            
+            // Redirect ke halaman Admin Index (Karena hanya Admin yang memanggil store ini sekarang)
+            return redirect()->route('admin.pasien.index')->with('success', 'Pasien baru berhasil didaftarkan oleh Admin.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Gagal: ' . $e->getMessage()])->withInput();
+            // Penting: Jika ada error SQL/DB lain, akan ditangkap dan dikembalikan
+            return back()->withErrors(['error' => 'Gagal menyimpan: ' . $e->getMessage()]);
         }
     }
 
-    public function edit($id)
+    // Tampilkan detail pasien (Admin)
+    public function show(Pasien $pasien)
     {
-        $pasien = Pasien::with('user')->findOrFail($id);
+        // Ambil riwayat medis lengkap pasien
+        $riwayatMedis = RekamMedis::where('pasien_id', $pasien->id)
+                                    ->with('dokter.user')
+                                    ->orderBy('tanggal', 'desc')
+                                    ->get();
+                                    
+        return view('admin.pasien.show', compact('pasien', 'riwayatMedis'));
+    }
+
+    // Tampilkan form edit pasien (Admin)
+    public function edit(Pasien $pasien)
+    {
         return view('admin.pasien.edit', compact('pasien'));
     }
 
-    public function update(Request $request, $id)
+    // Update data pasien (Admin)
+    public function update(Request $request, Pasien $pasien)
     {
-        $pasien = Pasien::findOrFail($id);
-        $userId = $pasien->user_id;
-
+        // Validasi dan logika update data pasien
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => "required|string|email|max:255|unique:users,email,$userId",
-            'nik' => "required|string|size:16|unique:pasiens,nik,$pasien->id",
+            'name' => 'required|string',
+            'email' => "required|email|unique:users,email,{$pasien->user_id}",
+            'nik' => "required|string|unique:pasiens,nik,{$pasien->id}",
             'alamat' => 'required|string',
             'tanggal_lahir' => 'required|date',
-            'password' => 'nullable|string|min:8',
+            'password' => 'nullable|min:8',
         ]);
 
         DB::beginTransaction();
         try {
-            $userData = ['name' => $request->name, 'email' => $request->email];
+            // Update User
+            $dataUser = ['name' => $request->name, 'email' => $request->email];
             if ($request->filled('password')) {
-                $userData['password'] = Hash::make($request->password);
+                $dataUser['password'] = Hash::make($request->password);
             }
-            $pasien->user->update($userData);
+            $pasien->user->update($dataUser);
 
-            $pasien->update([
-                'nik' => $request->nik,
-                'alamat' => $request->alamat,
-                'tanggal_lahir' => $request->tanggal_lahir,
-            ]);
+            // Update Detail Pasien
+            $pasien->update($request->only('nik', 'alamat', 'tanggal_lahir'));
 
             DB::commit();
-            return redirect()->route('admin.pasien.index')->with('success', 'Data berhasil diperbarui.');
+            return redirect()->route('admin.pasien.index')->with('success', 'Data Pasien berhasil diperbarui.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Gagal: ' . $e->getMessage()])->withInput();
+            return back()->withErrors(['error' => 'Gagal update: ' . $e->getMessage()]);
         }
     }
-
-    public function destroy($id)
+    
+    // Hapus data pasien (Admin)
+    public function destroy(Pasien $pasien)
     {
-        try {
-            $pasien = Pasien::findOrFail($id);
-            $pasien->user->delete();
-            return redirect()->route('admin.pasien.index')->with('success', 'Pasien berhasil dihapus.');
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Gagal menghapus: ' . $e->getMessage()]);
-        }
+        $pasien->user->delete(); // Cascade delete akan menghapus Pasien
+        return redirect()->route('admin.pasien.index')->with('success', 'Data Pasien berhasil dihapus.');
     }
 }

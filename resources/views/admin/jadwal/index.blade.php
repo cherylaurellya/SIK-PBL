@@ -65,7 +65,8 @@
                                             {{ $jadwal->jam_mulai }} - {{ $jadwal->jam_selesai }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($jadwal->status == 'aktif' || $jadwal->status == 1)
+                                            {{-- LOGIKA BARU: Cek jika status adalah integer 1 (Aktif) --}}
+                                            @if($jadwal->status == 1)
                                                 <span class="text-green-600 text-xs font-bold">Aktif</span>
                                             @else
                                                 <span class="text-red-600 text-xs font-bold">Libur</span>

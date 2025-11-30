@@ -1,131 +1,42 @@
 <?php
 
-namespace App\Http\Controllers;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
-use App\Models\Dokter;
-use App\Models\User;
-use App\Models\RekamMedis;
-use App\Models\Pasien;
-use Carbon\Carbon;
-
-class DokterController extends Controller
+return new class extends Migration
 {
-    // ... (Bagian Dashboard Dokter biarkan sama, skip ke bawah) ...
-    public function dashboard()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
-        $user = Auth::user();
-        if (!$user->dokter) {
-            return redirect()->route('login')->with('error', 'Akun tidak valid.');
-        }
-        $sudahDiperiksa = RekamMedis::whereDate('tanggal', Carbon::today())
-                            ->where('dokter_id', $user->dokter->id)
-                            ->with('pasien.user')->get();
-        $idPasienSudah = $sudahDiperiksa->pluck('pasien_id')->toArray();
-        $antrian = Pasien::whereNotIn('id', $idPasienSudah)->with('user')->get();
-        $jumlahSelesai = $sudahDiperiksa->count();
-        $jumlahAntrian = $antrian->count();
-        return view('dokter.dashboard', compact('antrian', 'sudahDiperiksa', 'jumlahSelesai', 'jumlahAntrian'));
-    }
+        // KOREKSI: Ini harusnya Schema::CREATE jika tabel dokters belum ada.
+        // TETAPI, karena Anda sedang memperbaiki masalah *no_str* pada tabel yang *sudah ada*, 
+        // kita perlu menemukan migrasi yang *sebenarnya* membuat tabel dokters.
 
-    // ==========================================================
-    //  BAGIAN CRUD ADMIN (SUDAH DIPERBAIKI NAMA KOLOMNYA)
-    // ==========================================================
-
-    public function index()
-    {
-        $dokters = Dokter::with('user')->get();
-        return view('admin.dokter.index', compact('dokters'));
-    }
-
-    public function create()
-    {
-        return view('admin.dokter.create');
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:8',
-            'spesialisasi' => 'required|string', // SESUAI DATABASE
-            'no_str' => 'required|string',       // SESUAI DATABASE
-        ]);
-
-        DB::beginTransaction();
-        try {
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'role' => 'dokter',
-            ]);
-
-            Dokter::create([
-                'user_id' => $user->id,
-                'spesialisasi' => $request->spesialisasi, // FIX
-                'no_str' => $request->no_str,             // FIX
-            ]);
-
-            DB::commit();
-            return redirect()->route('admin.dokter.index')->with('success', 'Dokter berhasil ditambahkan.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => 'Gagal menyimpan: ' . $e->getMessage()]);
-        }
-    }
-
-    public function edit($id)
-    {
-        $dokter = Dokter::with('user')->findOrFail($id);
-        return view('admin.dokter.edit', compact('dokter'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $dokter = Dokter::findOrFail($id);
+        // Mari kita asumsikan Anda memiliki file lain yang membuat tabel 'dokters'.
+        // Kita HANYA akan mengubah file ini menjadi migrasi yang membuat TABEL DOKTER SECARA LENGKAP,
+        // yang secara implisit akan memasukkan kolom 'no_str'.
         
-        $request->validate([
-            'name' => 'required',
-            'email' => "required|email|unique:users,email,$dokter->user_id",
-            'spesialisasi' => 'required', // FIX
-            'no_str' => 'required',       // FIX
-        ]);
-
-        DB::beginTransaction();
-        try {
-            $dataUser = ['name' => $request->name, 'email' => $request->email];
-            if ($request->filled('password')) {
-                $dataUser['password'] = Hash::make($request->password);
-            }
-            $dokter->user->update($dataUser);
-
-            $dokter->update([
-                'spesialisasi' => $request->spesialisasi, // FIX
-                'no_str' => $request->no_str              // FIX
-            ]);
-
-            DB::commit();
-            
-            // Redirect ke Index
-            return redirect()->route('admin.dokter.index')->with('success', 'Data Dokter diperbarui.');
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => 'Gagal update: ' . $e->getMessage()]);
-        }
+        // JIKA file ini seharusnya HANYA MENAMBAH KOLOM (ALTER TABLE), maka Anda memiliki file migrasi lain yang salah.
+        // Karena tidak ada file lain yang menyediakan definisi tabel 'dokters', mari kita ubah file ini untuk MEMBUAT TABEL.
+        
+        Schema::create('dokters', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('spesialisasi')->nullable();
+            // Tambahkan kolom no_str di sini
+            $table->string('no_str')->nullable(); 
+            $table->timestamps();
+        });
     }
 
-    public function destroy($id)
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
-        $dokter = Dokter::findOrFail($id);
-        $dokter->user->delete(); 
-        return redirect()->route('admin.dokter.index')->with('success', 'Data Dokter dihapus.');
+        Schema::dropIfExists('dokters');
     }
-}
+};

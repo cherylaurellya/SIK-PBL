@@ -11,15 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('pembayarans', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('pasien_id')->constrained('pasiens')->onDelete('cascade');
-    $table->foreignId('rekam_medis_id')->constrained('rekam_medis')->onDelete('cascade');
-    $table->integer('total_biaya');
-    $table->date('tanggal_bayar');
-    $table->string('status')->default('pending'); // pending, lunas
-    $table->timestamps();
-});
+        Schema::create('pembayarans', function (Blueprint $table) {
+            $table->id();
+            // Foreign Key
+            // Asumsi foreign key ke rekam_medis_id
+            $table->foreignId('rekam_medis_id')->constrained('rekam_medis')->onDelete('cascade'); 
+            
+            // Kolom Data Pembayaran
+            $table->integer('total_biaya'); // FIX: Diperlukan oleh Controller/Model
+            $table->string('metode_pembayaran'); // FIX: Diperlukan oleh Controller/Model
+            $table->string('status')->default('Lunas'); // Diperlukan oleh Controller/Model
+            
+            $table->timestamps();
+        });
     }
 
     /**

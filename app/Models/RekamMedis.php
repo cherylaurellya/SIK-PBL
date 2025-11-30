@@ -2,26 +2,43 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class RekamMedis extends Model
 {
-    protected $table = 'rekam_medis';
-    protected $fillable = ['pasien_id', 'dokter_id', 'perawat_id', 'tanggal', 'keluhan', 'diagnosis', 'tindakan'];
+    use HasFactory;
 
-    public function pasien() {
+    protected $table = 'rekam_medis'; 
+
+    protected $fillable = [
+        'pasien_id',
+        'dokter_id',
+        'tanggal',
+        'keluhan',
+        'diagnosis', 
+        'tindakan',
+        'resep_obat',
+    ];
+
+    protected $casts = [
+        'tanggal' => 'datetime', 
+    ];
+
+    public function pasien()
+    {
         return $this->belongsTo(Pasien::class);
     }
-    public function dokter() {
+
+    public function dokter()
+    {
         return $this->belongsTo(Dokter::class);
     }
-    public function perawat() {
-        return $this->belongsTo(Perawat::class);
-    }
-    public function resep() {
-        return $this->hasOne(Resep::class); // Atau hasMany jika 1 rekam medis bisa banyak resep
-    }
-    public function pembayaran() {
-        return $this->hasOne(Pembayaran::class);
+    
+    // [FIX AKHIR] Relasi yang Hilang: Rekam Medis memiliki satu Pembayaran
+    public function pembayaran()
+    {
+        // Asumsi kolom foreign key di tabel 'pembayarans' adalah 'rekam_medis_id'
+        return $this->hasOne(Pembayaran::class); 
     }
 }

@@ -4,22 +4,49 @@ namespace App\Http\Controllers;
 
 use App\Models\RekamMedis;
 use App\Models\Pasien;
+use App\Models\Dokter;
+use App\Models\Resep;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Carbon\Carbon;
 
 class RekamMedisController extends Controller
 {
     /**
-     * Menampilkan form untuk membuat rekam medis baru.
+     * [BARU] Menampilkan daftar lengkap riwayat medis untuk pasien yang sedang login.
      */
-    public function create()
+    public function indexPasien()
     {
-        // Ambil data pasien untuk dropdown
-        $pasiens = Pasien::with('user')->get();
+        // 1. Ambil data pasien yang sedang login
+        $user = Auth::user();
+        $pasien = Pasien::where('user_id', $user->id)->firstOrFail(); 
         
-        return view('dokter.rekam_medis.create', compact('pasiens'));
+        // 2. Ambil semua rekam medis milik pasien ini
+        // Menggunakan with('dokter.user') untuk menampilkan nama dokter
+        $riwayatMedis = RekamMedis::where('pasien_id', $pasien->id)
+                                    ->with('dokter.user')
+                                    ->orderBy('tanggal', 'desc')
+                                    ->get();
+
+        // 3. Tampilkan view daftar riwayat
+        return view('pasien.rekam_medis.index', compact('riwayatMedis', 'user'));
+    }
+
+    /**
+     * Menampilkan form untuk membuat rekam medis baru untuk Pasien tertentu.
+     */
+    public function create(Pasien $pasien)
+    {
+        // ... (kode create Dokter tetap sama) ...
+        $dokter = Auth::user()->dokter; 
+
+        if (!$dokter) {
+             return back()->withErrors(['error' => 'Data Dokter (Role Dokter) yang sedang login tidak ditemukan.']);
+        }
+
+        return view('dokter.rekam_medis.create', compact('pasien', 'dokter'));
     }
 
     /**
@@ -27,23 +54,21 @@ class RekamMedisController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi input
+        // ... (kode store tetap sama) ...
         $request->validate([
             'pasien_id' => 'required|exists:pasiens,id',
             'keluhan' => 'required|string',
-            'diagnosa' => 'required|string', // Nama input di form adalah 'diagnosa'
+            'diagnosa' => 'required|string', 
             'tindakan' => 'required|string',
             'resep_obat' => 'nullable|string',
         ]);
 
-        // Simpan ke database
-        // PERBAIKAN: Mapping input 'diagnosa' ke kolom 'diagnosis'
         RekamMedis::create([
             'pasien_id' => $request->pasien_id,
             'dokter_id' => Auth::user()->dokter->id,
             'tanggal' => now(),
             'keluhan' => $request->keluhan,
-            'diagnosis' => $request->diagnosa, // <--- Perhatikan ini: Kiri (DB) = diagnosis, Kanan (Form) = diagnosa
+            'diagnosis' => $request->diagnosa, 
             'tindakan' => $request->tindakan,
             'resep_obat' => $request->resep_obat,
         ]);

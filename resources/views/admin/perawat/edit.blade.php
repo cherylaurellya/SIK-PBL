@@ -1,60 +1,69 @@
-@extends('layouts.admin')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Edit Data Perawat') }}
+        </h2>
+    </x-slot>
 
-@section('content')
-<div class="container-fluid px-4">
-    <h1 class="mt-4">Edit Data Perawat</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="{{ route('admin.perawat.index') }}">Manajemen Perawat</a></li>
-        <li class="breadcrumb-item active">Edit Data</li>
-    </ol>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
 
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-user-edit me-1"></i> Form Edit Perawat
-        </div>
-        <div class="card-body">
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                    {{-- Menampilkan Pesan Error Validasi --}}
+                    @if ($errors->any())
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                            <strong class="font-bold">Gagal Menyimpan!</strong>
+                            <ul class="list-disc ml-5 mt-2">
+                                @foreach ($errors->all() as $error)
+                                    <li>- {{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    {{-- FIX: Action harus ke admin.perawat.update dan menggunakan variabel $perawat --}}
+                    <form action="{{ route('admin.perawat.update', $perawat->id) }}" method="POST">
+                        @csrf
+                        @method('PUT') 
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {{-- Nama --}}
+                            <div>
+                                <label for="name" class="block font-medium text-sm text-gray-700">Nama Lengkap</label>
+                                <input type="text" name="name" id="name" value="{{ old('name', $perawat->user->name) }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                            </div>
+
+                            {{-- Email --}}
+                            <div>
+                                <label for="email" class="block font-medium text-sm text-gray-700">Email Login</label>
+                                <input type="email" name="email" id="email" value="{{ old('email', $perawat->user->email) }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                            </div>
+
+                            {{-- NOMOR STR --}}
+                            <div>
+                                {{-- FIX: Menggunakan nama field yang benar sesuai Controller: 'nomor_str' --}}
+                                <label for="nomor_str" class="block font-medium text-sm text-gray-700">Nomor STR</label>
+                                <input type="text" name="nomor_str" id="nomor_str" value="{{ old('nomor_str', $perawat->nomor_str) }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" required>
+                            </div>
+
+                            {{-- Password (Opsional) --}}
+                            <div>
+                                <label for="password" class="block font-medium text-sm text-gray-700">Password Baru (Opsional)</label>
+                                <input type="password" name="password" id="password" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" placeholder="Biarkan kosong jika tidak diganti">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end mt-4">
+                            <a href="{{ route('admin.perawat.index') }}" class="text-gray-600 underline text-sm hover:text-gray-900 mr-4">Batal</a>
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 focus:bg-purple-700 active:bg-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                Update Data
+                            </button>
+                        </div>
+                    </form>
+
                 </div>
-            @endif
-
-            <form action="{{ route('admin.perawat.update', $perawat->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="name" class="form-label fw-bold">Nama Lengkap</label>
-                        <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $perawat->user->name) }}" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="email" class="form-label fw-bold">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $perawat->user->email) }}" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="password" class="form-label fw-bold">Password Baru <small class="text-muted fw-normal">(Opsional)</small></label>
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah">
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="nomor_str" class="form-label fw-bold">Nomor STR</label>
-                        <input type="text" class="form-control" id="nomor_str" name="nomor_str" value="{{ old('nomor_str', $perawat->nomor_str) }}" required>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-end mt-3">
-                    <a href="{{ route('admin.perawat.index') }}" class="btn btn-secondary me-2">Batal</a>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-sync-alt me-1"></i> Update Data</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>

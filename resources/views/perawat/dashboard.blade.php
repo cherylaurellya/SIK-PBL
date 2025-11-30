@@ -7,53 +7,54 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
-            {{-- 1. HEADER SAMBUTAN --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900 flex justify-between items-center">
-                    <div>
-                        <h3 class="text-lg font-bold">Halo, Perawat {{ Auth::user()->name }}!</h3>
-                        <p class="text-gray-600">Selamat bertugas. Semoga hari Anda menyenangkan.</p>
-                    </div>
-                    <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded border border-purple-400">
-                        Staff Medis
-                    </span>
-                </div>
-            </div>
-
-            {{-- 2. MENU CEPAT --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 
-                {{-- Card Jadwal Dokter --}}
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-indigo-500">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-indigo-100 text-indigo-500 mr-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h4 class="text-lg font-bold text-gray-800">Cek Jadwal Dokter</h4>
-                            <p class="text-sm text-gray-500 mb-2">Lihat jadwal praktik dokter hari ini.</p>
-                            <a href="{{ route('perawat.jadwal-dokter.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-semibold">Lihat Jadwal &rarr;</a>
-                        </div>
+                <div class="mb-8">
+                    <h1 class="text-2xl font-bold text-gray-800">Halo, Ners {{ Auth::user()->name }}!</h1>
+                    <p class="text-gray-600">Selamat bertugas. Semoga hari Anda menyenangkan.</p>
+                </div>
+
+                {{-- STATISTIK UTAMA --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    
+                    {{-- 1. Pasien Menunggu Antrian --}}
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg shadow-sm">
+                        <div class="text-sm font-bold text-blue-500 uppercase">Antrian Hari Ini</div>
+                        <div class="text-3xl font-extrabold text-blue-700 mt-1">{{ $totalAntrian }}</div>
+                    </div>
+
+                    {{-- 2. Pasien Selesai Hari Ini --}}
+                    <div class="bg-green-50 border-l-4 border-green-500 p-6 rounded-r-lg shadow-sm">
+                        <div class="text-sm font-bold text-green-500 uppercase">Selesai Diperiksa</div>
+                        <div class="text-3xl font-extrabold text-green-700 mt-1">{{ $totalSelesaiHariIni }}</div>
+                    </div>
+
+                    {{-- 3. Total Pasien Terdaftar --}}
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded-r-lg shadow-sm">
+                        <div class="text-sm font-bold text-yellow-500 uppercase">Total Pasien Terdaftar</div>
+                        <div class="text-3xl font-extrabold text-yellow-700 mt-1">{{ $totalPasienTerdaftar }}</div>
                     </div>
                 </div>
 
-                {{-- Card Pasien (Contoh Fitur Masa Depan) --}}
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-green-500">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h4 class="text-lg font-bold text-gray-800">Data Pasien</h4>
-                            <p class="text-sm text-gray-500 mb-2">Kelola antrian atau data vital pasien.</p>
-                            <span class="text-gray-400 text-xs italic">(Segera Hadir)</span>
-                        </div>
-                    </div>
+                {{-- MENU TUGAS UTAMA --}}
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Menu Tugas Utama</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+                    {{-- Cek Jadwal Dokter (Read Only) --}}
+                    <a href="{{ route('perawat.jadwal-dokter.index') }}" class="block bg-white p-6 rounded-lg shadow-md text-center hover:shadow-xl transition duration-150 border border-gray-200">
+                        <span class="text-4xl text-blue-500">📅</span>
+                        <div class="mt-3 font-semibold text-gray-700">Cek Jadwal Dokter</div>
+                        <p class="text-xs text-gray-500">Lihat jadwal praktik hari ini.</p>
+                    </a>
+
+                    {{-- Kelola Antrian Pasien --}}
+                    <a href="{{ route('perawat.antrian.index') }}" class="block bg-white p-6 rounded-lg shadow-md text-center hover:shadow-xl transition duration-150 border border-gray-200">
+                        <span class="text-4xl text-green-500">👥</span>
+                        <div class="mt-3 font-semibold text-gray-700">Kelola Antrian Pasien</div>
+                        <p class="text-xs text-gray-500">Cek daftar pasien menunggu.</p>
+                    </a>
+                    
+                    {{-- [DIHAPUS] Akses Pembayaran/Kasir (Hanya Admin) --}}
                 </div>
 
             </div>

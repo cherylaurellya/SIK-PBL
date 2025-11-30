@@ -12,17 +12,25 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('rekam_medis', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('pasien_id')->constrained('pasiens')->onDelete('cascade');
-    $table->foreignId('dokter_id')->constrained('dokters')->onDelete('cascade');
-    // Perawat bisa nullable jika tidak selalu mendampingi
-    $table->foreignId('perawat_id')->nullable()->constrained('perawats')->onDelete('set null'); 
-    $table->date('tanggal');
-    $table->text('keluhan');
-    $table->text('diagnosis');
-    $table->text('tindakan')->nullable();
-    $table->timestamps();
-});
+            $table->id();
+            // Foreign Keys
+            $table->foreignId('pasien_id')->constrained('pasiens')->onDelete('cascade');
+            $table->foreignId('dokter_id')->constrained('dokters')->onDelete('cascade');
+            
+            // Kolom Data Pemeriksaan
+            $table->date('tanggal');
+            $table->text('keluhan');
+            
+            // FIX: Kolom diagnosis yang menyebabkan NOT NULL constraint
+            $table->text('diagnosis'); 
+            
+            $table->text('tindakan');
+            
+            // FIX: Kolom resep_obat yang menyebabkan NO SUCH COLUMN error
+            $table->text('resep_obat')->nullable(); 
+            
+            $table->timestamps();
+        });
     }
 
     /**

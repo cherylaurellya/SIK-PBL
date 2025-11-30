@@ -16,36 +16,52 @@ use Carbon\Carbon;
 class PerawatController extends Controller
 {
     // ==========================================================
-    //  BAGIAN 1: DASHBOARD PERAWAT (Untuk Login sbg Perawat)
+    // BAGIAN 1: DASHBOARD PERAWAT (Untuk Login sbg Perawat)
     // ==========================================================
     public function dashboard()
     {
-        // Ambil ID pasien yang SUDAH diperiksa hari ini
+        // Ambil ID pasien yang SUDAH diperiksa hari ini (oleh dokter mana pun)
         $idPasienSudahDiperiksa = RekamMedis::whereDate('tanggal', Carbon::today())
-                                    ->pluck('pasien_id')
-                                    ->toArray();
+                                         ->pluck('pasien_id')
+                                         ->toArray();
 
         // A. DATA ANTRIAN (Pasien yang BELUM diperiksa hari ini)
         $antrian = Pasien::whereNotIn('id', $idPasienSudahDiperiksa)
-                    ->with('user')
-                    ->orderBy('updated_at', 'desc')
-                    ->get();
+                         ->with('user')
+                         ->orderBy('updated_at', 'desc')
+                         ->get();
 
         // B. DATA SELESAI (Pasien yang SUDAH diperiksa hari ini)
         $selesai = RekamMedis::whereDate('tanggal', Carbon::today())
-                    ->with('pasien.user', 'dokter.user')
-                    ->get();
+                          ->get();
 
-        // Statistik
+        // Statistik yang dibutuhkan di view
         $totalAntrian = $antrian->count();
-        $totalSelesai = $selesai->count();
-        $dokterPraktek = 1; 
+        $totalSelesaiHariIni = $selesai->count();
+        $totalPasienTerdaftar = Pasien::count(); 
 
-        return view('perawat.dashboard', compact('antrian', 'selesai', 'totalAntrian', 'totalSelesai', 'dokterPraktek'));
+        return view('perawat.dashboard', compact('antrian', 'totalAntrian', 'totalSelesaiHariIni', 'totalPasienTerdaftar'));
     }
+    
+    // [FIX: METHOD HILANG DITAMBAHKAN] Menampilkan daftar antrian pasien lengkap
+    public function showAntrian()
+    {
+        // Logika Antrian sama dengan yang ada di dashboard
+        $idPasienSudahDiperiksa = RekamMedis::whereDate('tanggal', Carbon::today())
+                                         ->pluck('pasien_id')
+                                         ->toArray();
 
+        $antrianPasien = Pasien::whereNotIn('id', $idPasienSudahDiperiksa)
+                         ->with('user')
+                         ->orderBy('updated_at', 'desc')
+                         ->get();
+                         
+        // Memuat view antrian/index.blade.php
+        return view('perawat.antrian.index', compact('antrianPasien'));
+    }
+    
     // ==========================================================
-    //  BAGIAN 2: CRUD ADMIN (Manajemen Data Perawat)
+    // BAGIAN 2: CRUD ADMIN (Manajemen Data Perawat)
     // ==========================================================
 
     public function index()
@@ -65,7 +81,7 @@ class PerawatController extends Controller
             'name' => 'required|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:8',
-            'nomor_str' => 'required|string', // Nomor Surat Tanda Registrasi Perawat
+            'nomor_str' => 'required|string|unique:perawats', 
         ]);
 
         DB::beginTransaction();
@@ -105,8 +121,9 @@ class PerawatController extends Controller
         
         $request->validate([
             'name' => 'required',
-            'email' => "required|email|unique:users,email,$perawat->user_id",
-            'nomor_str' => 'required',
+            'email' => "required|email|unique:users,email,{$perawat->user_id}",
+            'nomor_str' => "required|unique:perawats,nomor_str,{$perawat->id}",
+            'password' => 'nullable|min:8',
         ]);
 
         DB::beginTransaction();

@@ -1,98 +1,114 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard Perawat') }}
+            {{ __('Dashboard Administrator') }}
         </h2>
     </x-slot>
 
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            {{-- 1. HEADER --}}
-            <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex justify-between items-center border-l-4 border-purple-500">
+            {{-- WELCOME BANNER --}}
+            <div class="bg-white rounded-2xl shadow-sm p-6 mb-8 border-l-8 border-emerald-500 flex justify-between items-center">
                 <div>
-                    <h3 class="text-xl font-bold text-gray-800">Halo, Ners {{ Auth::user()->name }}! 👋</h3>
-                    <p class="text-gray-500 text-sm mt-1">Selamat bertugas. Utamakan pelayanan prima kepada pasien.</p>
+                    <h3 class="text-2xl font-bold text-gray-800">Selamat Datang, Admin {{ Auth::user()->name }}! 👑</h3>
+                    <p class="text-gray-500 mt-1">Anda memiliki akses penuh untuk mengelola sistem klinik ini.</p>
                 </div>
-                <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                    Staff Medis
-                </span>
+                <div class="hidden md:block">
+                    <span class="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-sm font-bold">
+                        {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                </div>
             </div>
 
-            {{-- 2. MENU GRID --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {{-- STATS GRID (KARTU STATISTIK) --}}
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 
-                {{-- MENU 1: JADWAL DOKTER --}}
-                <a href="{{ route('perawat.jadwal-dokter.index') }}" class="group bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border border-gray-100 flex flex-col items-center text-center cursor-pointer">
-                    <div class="p-4 bg-indigo-50 text-indigo-600 rounded-full mb-4 group-hover:bg-indigo-600 group-hover:text-white transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
+                {{-- Card 1: Pasien --}}
+                <div class="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 shadow-lg text-white transform hover:scale-105 transition duration-300">
+                    <div class="absolute right-0 top-0 opacity-10 transform translate-x-2 -translate-y-2">
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
                     </div>
-                    <h4 class="font-bold text-gray-800">Jadwal Dokter</h4>
-                    <p class="text-xs text-gray-500 mt-2">Cek siapa dokter yang praktik hari ini.</p>
-                </a>
-
-                {{-- MENU 2: INPUT TTV (Vital Signs) --}}
-                {{-- Kita arahkan ke dashboard dokter sementara atau buat route baru nanti --}}
-                <div class="group bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border border-gray-100 flex flex-col items-center text-center cursor-pointer relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-red-500 text-white text-[10px] px-2 py-1 rounded-bl-lg font-bold">UTAMA</div>
-                    <div class="p-4 bg-pink-50 text-pink-600 rounded-full mb-4 group-hover:bg-pink-600 group-hover:text-white transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                    </div>
-                    <h4 class="font-bold text-gray-800">Pemeriksaan Awal</h4>
-                    <p class="text-xs text-gray-500 mt-2">Cek Tensi, Suhu, & Berat Badan Pasien.</p>
+                    <p class="text-blue-100 text-sm font-medium uppercase tracking-wider">Total Pasien</p>
+                    <h4 class="text-4xl font-extrabold mt-2">{{ \App\Models\User::where('role', 'pasien')->count() }}</h4>
                 </div>
 
-                {{-- MENU 3: PEMBAYARAN / KASIR --}}
-                {{-- Karena PDF bilang ada fitur Pembayaran & Resep --}}
-                <a href="{{ route('admin.pembayaran.index') }}" class="group bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border border-gray-100 flex flex-col items-center text-center cursor-pointer">
-                    <div class="p-4 bg-green-50 text-green-600 rounded-full mb-4 group-hover:bg-green-600 group-hover:text-white transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
+                {{-- Card 2: Dokter --}}
+                <div class="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-6 shadow-lg text-white transform hover:scale-105 transition duration-300">
+                    <div class="absolute right-0 top-0 opacity-10 transform translate-x-2 -translate-y-2">
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" /></svg>
                     </div>
-                    <h4 class="font-bold text-gray-800">Kasir & Obat</h4>
-                    <p class="text-xs text-gray-500 mt-2">Proses pembayaran & pengambilan obat.</p>
-                </a>
+                    <p class="text-emerald-100 text-sm font-medium uppercase tracking-wider">Dokter</p>
+                    <h4 class="text-4xl font-extrabold mt-2">{{ \App\Models\Dokter::count() }}</h4>
+                </div>
 
+                {{-- Card 3: Perawat --}}
+                <div class="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 shadow-lg text-white transform hover:scale-105 transition duration-300">
+                    <div class="absolute right-0 top-0 opacity-10 transform translate-x-2 -translate-y-2">
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
+                    </div>
+                    <p class="text-purple-100 text-sm font-medium uppercase tracking-wider">Perawat</p>
+                    <h4 class="text-4xl font-extrabold mt-2">{{ \App\Models\Perawat::count() }}</h4>
+                </div>
+
+                {{-- Card 4: Kunjungan --}}
+                <div class="relative overflow-hidden bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl p-6 shadow-lg text-white transform hover:scale-105 transition duration-300">
+                    <div class="absolute right-0 top-0 opacity-10 transform translate-x-2 -translate-y-2">
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
+                    </div>
+                    <p class="text-orange-100 text-sm font-medium uppercase tracking-wider">Kunjungan Hari Ini</p>
+                    <h4 class="text-4xl font-extrabold mt-2">{{ \App\Models\RekamMedis::whereDate('tanggal', \Carbon\Carbon::today())->count() }}</h4>
+                </div>
             </div>
 
-             {{-- 3. TABEL PASIEN HARI INI --}}
-             <div class="mt-8 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 border-b border-gray-200">
-                    <h4 class="font-bold text-lg text-gray-800 mb-4">Antrian Pasien Hari Ini</h4>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pasien</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                {{-- Data Dummy (Nanti bisa diganti query real) --}}
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">Budi Santoso</div>
-                                        <div class="text-xs text-gray-500">Umum</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            Menunggu TTV
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button class="text-indigo-600 hover:text-indigo-900 text-xs font-bold">Periksa TTV</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+            {{-- MENU PENGELOLAAN (SHORTCUTS) --}}
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Menu Pengelolaan</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                
+                {{-- Shortcut 1: Dokter --}}
+                <a href="{{ route('admin.dokter.index') }}" class="group bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border border-gray-100 flex flex-col items-center text-center">
+                    <div class="p-4 bg-emerald-50 text-emerald-600 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition mb-3">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                     </div>
-                </div>
+                    <h4 class="text-lg font-bold text-gray-800">Kelola Dokter</h4>
+                    <p class="text-gray-500 text-xs mt-1">Data Spesialis & Akun</p>
+                </a>
+
+                {{-- Shortcut 2: Pasien --}}
+                <a href="{{ route('admin.pasien.index') }}" class="group bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border border-gray-100 flex flex-col items-center text-center">
+                    <div class="p-4 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition mb-3">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-800">Kelola Pasien</h4>
+                    <p class="text-gray-500 text-xs mt-1">Detail & registrasi pasien</p>
+                </a>
+
+                {{-- Shortcut 3: Perawat (INI YANG HILANG) --}}
+                <a href="{{ route('admin.perawat.index') }}" class="group bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border border-gray-100 flex flex-col items-center text-center">
+                    <div class="p-4 bg-purple-50 text-purple-600 rounded-xl group-hover:bg-purple-600 group-hover:text-white transition mb-3">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-800">Kelola Perawat</h4>
+                    <p class="text-gray-500 text-xs mt-1">Data staff & NIP</p>
+                </a>
+
+                {{-- Shortcut 4: Jadwal Dokter (INI YANG HILANG) --}}
+                <a href="{{ route('admin.jadwal-dokter.index') }}" class="group bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border border-gray-100 flex flex-col items-center text-center">
+                    <div class="p-4 bg-red-50 text-red-600 rounded-xl group-hover:bg-red-600 group-hover:text-white transition mb-3">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-800">Kelola Jadwal</h4>
+                    <p class="text-gray-500 text-xs mt-1">Atur jam praktik dokter</p>
+                </a>
+                
+                {{-- Shortcut 5: Kasir --}}
+                <a href="{{ route('admin.pembayaran.index') }}" class="group bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition border border-gray-100 flex flex-col items-center text-center">
+                    <div class="p-4 bg-orange-50 text-orange-600 rounded-xl group-hover:bg-orange-600 group-hover:text-white transition mb-3">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-800">Kasir / Pembayaran</h4>
+                    <p class="text-gray-500 text-xs mt-1">Proses transaksi pasien</p>
+                </a>
             </div>
 
         </div>
