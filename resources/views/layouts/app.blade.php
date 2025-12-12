@@ -11,8 +11,29 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- Scripts -->
+        <!-- Vite Assets (Production Build) -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <!-- Tailwind CDN Fallback (Untuk Production/InfinityFree) -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        
+        <!-- Font Awesome untuk Icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        
+        <!-- Custom Tailwind Config -->
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ['Figtree', 'ui-sans-serif', 'system-ui'],
+                        },
+                    }
+                }
+            }
+        </script>
+
+        @stack('styles')
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
@@ -32,5 +53,7 @@
                 {{ $slot }}
             </main>
         </div>
+
+        @stack('scripts')
     </body>
 </html>

@@ -18,58 +18,60 @@ class UserRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        // Gunakan DB::transaction() untuk memastikan semua query berhasil
-        // atau tidak sama sekali (dibatalkan/rollback)
         DB::transaction(function () {
 
             // 1. Buat Admin
-            $adminUser = User::create([
-                'name' => 'Admin Utama',
-                'email' => 'admin@klinik.com',
-                'password' => Hash::make('password'), // ganti dengan password aman
-                'role' => 'admin',
-            ]);
-            // Buat profil admin terkait
-            Admin::create(['user_id' => $adminUser->id]);
+            $adminUser = User::firstOrCreate(
+                ['email' => 'admin@klinik.com'],
+                [
+                    'name' => 'Admin Utama',
+                    'password' => Hash::make('password'), // ganti dengan password aman
+                    'role' => 'admin',
+                ]
+            );
+            Admin::firstOrCreate(['user_id' => $adminUser->id]);
 
             // 2. Buat Dokter
-            $dokterUser = User::create([
-                'name' => 'Dr. Budi',
-                'email' => 'budi.dokter@klinik.com',
-                'password' => Hash::make('password'),
-                'role' => 'dokter',
-            ]);
-            // Buat profil dokter terkait
-            $dokterUser->dokter()->create([
-                'spesialis' => 'Umum',
+            $dokterUser = User::firstOrCreate(
+                ['email' => 'dr.budi@klinik.com'],
+                [
+                    'name' => 'Dr. Budi Santoso',
+                    'password' => Hash::make('password'),
+                    'role' => 'dokter',
+                ]
+            );
+            $dokterUser->dokter()->firstOrCreate([
+                'spesialisasi' => 'Umum',       // sesuai migration
+                'no_str' => '1234567890',       // sesuai migration
             ]);
 
             // 3. Buat Perawat
-            $perawatUser = User::create([
-                'name' => 'Perawat Siti',
-                'email' => 'siti.perawat@klinik.com',
-                'password' => Hash::make('password'),
-                'role' => 'perawat',
-            ]);
-            // Buat profil perawat terkait
-            $perawatUser->perawat()->create([
+            $perawatUser = User::firstOrCreate(
+                ['email' => 'siti.perawat@klinik.com'],
+                [
+                    'name' => 'Perawat Siti',
+                    'password' => Hash::make('password'),
+                    'role' => 'perawat',
+                ]
+            );
+            $perawatUser->perawat()->firstOrCreate([
                 'nomor_str' => 'STR123456',
             ]);
 
             // 4. Buat Pasien
-            $pasienUser = User::create([
-                'name' => 'Pasien Agus',
-                'email' => 'agus.pasien@gmail.com',
-                'password' => Hash::make('password'),
-                'role' => 'pasien',
-            ]);
-            // Buat profil pasien terkait
-            $pasienUser->pasien()->create([
+            $pasienUser = User::firstOrCreate(
+                ['email' => 'agus.pasien@gmail.com'],
+                [
+                    'name' => 'Pasien Agus',
+                    'password' => Hash::make('password'),
+                    'role' => 'pasien',
+                ]
+            );
+            $pasienUser->pasien()->firstOrCreate([
                 'nik' => '3510010203040001',
                 'alamat' => 'Jl. Kenangan No. 10',
                 'tanggal_lahir' => '1990-05-15',
             ]);
-
         });
     }
 }

@@ -13,6 +13,10 @@ use App\Http\Controllers\PembayaranController;
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
+|
+| Di sini Anda dapat mendaftarkan rute web untuk aplikasi Anda. Rute-rute
+| ini dimuat oleh RouteServiceProvider dalam grup yang berisi middleware "web".
+|
 */
 
 Route::get('/', function () {
@@ -20,6 +24,7 @@ Route::get('/', function () {
 });
 
 // --- SMART DASHBOARD REDIRECT ---
+// Mengarahkan pengguna ke dashboard yang sesuai berdasarkan peran (role).
 Route::get('/dashboard', function () {
     $user = auth()->user();
     if ($user->role === 'admin') {
@@ -35,6 +40,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // --- PROFILE SETTINGS ---
+// Rute untuk mengelola profil pengguna (Edit, Update, Delete).
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -86,7 +92,7 @@ Route::middleware(['auth', 'role:perawat'])->prefix('perawat')->name('perawat.')
     // Cek Jadwal Dokter (Read Only)
     Route::get('jadwal-dokter', [JadwalDokterController::class, 'index'])->name('jadwal-dokter.index');
     
-    // [FIX AKHIR: MENAMBAHKAN RUTE KELOLA ANTRIAN YANG HILANG]
+    // Kelola Antrian
     Route::get('antrian', [PerawatController::class, 'showAntrian'])->name('antrian.index');
 
 
@@ -108,4 +114,6 @@ Route::middleware(['auth', 'role:pasien'])->prefix('pasien')->name('pasien.')->g
     Route::get('/rekam-medis', [RekamMedisController::class, 'indexPasien'])->name('rekam-medis.index');
 });
 
+// --- RUTE AUTENTIKASI ---
+// Rute login, register, forgot-password, dan LOGOUT disertakan di sini.
 require __DIR__.'/auth.php';
