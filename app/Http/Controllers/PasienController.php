@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Pasien;
 use App\Models\User;
-use App\Models\RekamMedis; // Diperlukan untuk dashboard
+use App\Models\RekamMedis; 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -15,9 +15,6 @@ use Illuminate\Support\Str;
 
 class PasienController extends Controller
 {
-    // ==========================================================
-    // BAGIAN 1: DASHBOARD PASIEN (Khusus Role Pasien)
-    // ==========================================================
     
     public function dashboard()
     {
@@ -52,9 +49,6 @@ class PasienController extends Controller
         ));
     }
     
-    // ==========================================================
-    // BAGIAN 2: CRUD ADMIN (Manajemen Data Pasien)
-    // ==========================================================
     
     // Tampilkan daftar pasien (Admin)
     public function index()
@@ -63,8 +57,6 @@ class PasienController extends Controller
         return view('admin.pasien.index', compact('pasiens'));
     }
 
-    // [CREATE] Tampilkan form tambah pasien (Admin)
-    // METHOD INI HANYA BOLEH DIPANGGIL OLEH RUTE ADMIN.
     public function create()
     {
         return view('admin.pasien.create');

@@ -21,12 +21,10 @@ return new class extends Migration
             $table->date('tanggal');
             $table->text('keluhan');
             
-            // FIX: Kolom diagnosis yang menyebabkan NOT NULL constraint
             $table->text('diagnosis'); 
             
             $table->text('tindakan');
             
-            // FIX: Kolom resep_obat yang menyebabkan NO SUCH COLUMN error
             $table->text('resep_obat')->nullable(); 
             
             $table->timestamps();

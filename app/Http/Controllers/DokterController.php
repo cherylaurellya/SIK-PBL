@@ -16,9 +16,7 @@ use Carbon\Carbon; // Diperlukan untuk filter tanggal
 
 class DokterController extends Controller
 {
-    // ==========================================================
-    // BAGIAN 1: DASHBOARD DOKTER (Untuk Login sbg Dokter)
-    // ==========================================================
+    
     public function dashboard()
     {
         // 1. Ambil ID Dokter yang sedang login
@@ -33,9 +31,7 @@ class DokterController extends Controller
         // 2. Data Statistik (Pasien yang sudah ditangani)
         $totalPasienDitangani = RekamMedis::where('dokter_id', $dokter->id)->count();
 
-        // 3. Data Antrian Hari Ini (Pasien yang belum memiliki Rekam Medis hari ini)
-        // Logika ini perlu disesuaikan dengan flow registrasi pasien Anda.
-        // Asumsi: Kita ambil daftar semua pasien yang belum memiliki rekam medis hari ini.
+    
         $idPasienSudahDiperiksaHariIni = RekamMedis::whereDate('tanggal', Carbon::today())
                                                     ->pluck('pasien_id')
                                                     ->toArray();
@@ -56,11 +52,7 @@ class DokterController extends Controller
         return view('dokter.dashboard', compact('user', 'dokter', 'totalPasienDitangani', 'antrianPasien', 'totalAntrian', 'jadwalHariIni'));
     }
 
-    // ==========================================================
-    // BAGIAN 2: CRUD ADMIN (Manajemen Data Dokter)
-    // ==========================================================
-    
-    // Mengambil semua data dokter dan menampilkannya di halaman indeks admin
+
     public function index()
     {
         $dokters = Dokter::with('user')->get();

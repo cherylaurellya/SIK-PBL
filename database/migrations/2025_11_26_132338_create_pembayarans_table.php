@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('pembayarans', function (Blueprint $table) {
             $table->id();
-            // Foreign Key
-            // Asumsi foreign key ke rekam_medis_id
+           
             $table->foreignId('rekam_medis_id')->constrained('rekam_medis')->onDelete('cascade'); 
             
             // Kolom Data Pembayaran
-            $table->integer('total_biaya'); // FIX: Diperlukan oleh Controller/Model
-            $table->string('metode_pembayaran'); // FIX: Diperlukan oleh Controller/Model
-            $table->string('status')->default('Lunas'); // Diperlukan oleh Controller/Model
+            $table->integer('total_biaya'); 
+            $table->string('metode_pembayaran'); 
+            $table->string('status')->default('Lunas'); 
             
             $table->timestamps();
         });

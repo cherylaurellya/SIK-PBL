@@ -23,8 +23,7 @@ class RekamMedisController extends Controller
         $user = Auth::user();
         $pasien = Pasien::where('user_id', $user->id)->firstOrFail(); 
         
-        // 2. Ambil semua rekam medis milik pasien ini
-        // Menggunakan with('dokter.user') untuk menampilkan nama dokter
+       
         $riwayatMedis = RekamMedis::where('pasien_id', $pasien->id)
                                     ->with('dokter.user')
                                     ->orderBy('tanggal', 'desc')
