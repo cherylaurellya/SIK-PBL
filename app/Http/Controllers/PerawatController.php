@@ -11,58 +11,61 @@ use App\Models\Perawat;
 use App\Models\User;
 use App\Models\Pasien;
 use App\Models\RekamMedis;
+use App\Models\JadwalPraktik; 
 use Carbon\Carbon;
 
 class PerawatController extends Controller
 {
-    // ==========================================================
-    // BAGIAN 1: DASHBOARD PERAWAT (Untuk Login sbg Perawat)
-    // ==========================================================
+   
     public function dashboard()
     {
-        // Ambil ID pasien yang SUDAH diperiksa hari ini (oleh dokter mana pun)
+        // 1. Ambil ID pasien yang SUDAH diperiksa hari ini
         $idPasienSudahDiperiksa = RekamMedis::whereDate('tanggal', Carbon::today())
-                                         ->pluck('pasien_id')
-                                         ->toArray();
+                                            ->pluck('pasien_id')
+                                            ->toArray();
 
-        // A. DATA ANTRIAN (Pasien yang BELUM diperiksa hari ini)
+        // 2. DATA ANTRIAN (Pasien yang BELUM diperiksa)
         $antrian = Pasien::whereNotIn('id', $idPasienSudahDiperiksa)
                          ->with('user')
                          ->orderBy('updated_at', 'desc')
                          ->get();
 
-        // B. DATA SELESAI (Pasien yang SUDAH diperiksa hari ini)
-        $selesai = RekamMedis::whereDate('tanggal', Carbon::today())
-                          ->get();
+        // 3. DATA SELESAI (Pasien yang SUDAH diperiksa)
+        $selesai = RekamMedis::whereDate('tanggal', Carbon::today())->get();
 
-        // Statistik yang dibutuhkan di view
+        // 4. Statistik
         $totalAntrian = $antrian->count();
         $totalSelesaiHariIni = $selesai->count();
         $totalPasienTerdaftar = Pasien::count(); 
 
         return view('perawat.dashboard', compact('antrian', 'totalAntrian', 'totalSelesaiHariIni', 'totalPasienTerdaftar'));
     }
+
     
-    // [FIX: METHOD HILANG DITAMBAHKAN] Menampilkan daftar antrian pasien lengkap
+    public function lihatJadwal()
+    {
+        
+        $jadwals = JadwalPraktik::with('dokter.user')->get();
+        
+        
+        return view('admin.jadwal.index', compact('jadwals'));
+    }
+    
     public function showAntrian()
     {
-        // Logika Antrian sama dengan yang ada di dashboard
         $idPasienSudahDiperiksa = RekamMedis::whereDate('tanggal', Carbon::today())
-                                         ->pluck('pasien_id')
-                                         ->toArray();
+                                            ->pluck('pasien_id')
+                                            ->toArray();
 
         $antrianPasien = Pasien::whereNotIn('id', $idPasienSudahDiperiksa)
-                         ->with('user')
-                         ->orderBy('updated_at', 'desc')
-                         ->get();
-                         
-        // Memuat view antrian/index.blade.php
+                          ->with('user')
+                          ->orderBy('updated_at', 'desc')
+                          ->get();
+                          
         return view('perawat.antrian.index', compact('antrianPasien'));
     }
     
-    // ==========================================================
-    // BAGIAN 2: CRUD ADMIN (Manajemen Data Perawat)
-    // ==========================================================
+    
 
     public function index()
     {
@@ -86,7 +89,6 @@ class PerawatController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1. Buat User Login
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -94,7 +96,6 @@ class PerawatController extends Controller
                 'role' => 'perawat',
             ]);
 
-            // 2. Buat Data Detail Perawat
             Perawat::create([
                 'user_id' => $user->id,
                 'nomor_str' => $request->nomor_str,

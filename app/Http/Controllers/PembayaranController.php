@@ -4,76 +4,64 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\RekamMedis;
-use App\Models\Pembayaran; // Model Pembayaran
-use Carbon\Carbon;
+use App\Models\Pembayaran;
+use Illuminate\Support\Facades\DB;
 
 class PembayaranController extends Controller
 {
-    // Tampilkan daftar tagihan yang belum dibayar (Kasir/Admin)
+    // MENAMPILKAN HALAMAN KASIR
     public function index()
     {
-        // 1. Ambil Pasien yang BELUM Bayar
-        $belumBayar = RekamMedis::doesntHave('pembayaran')
-                        ->with(['pasien.user', 'dokter.user']) 
-                        ->latest()
-                        ->get();
+        // 1. Ambil data Rekam Medis yang BELUM punya data Pembayaran (Tagihan Baru)
+        // Syarat: Harus ada relasi 'pembayaran' di model RekamMedis
+        $tagihanBelumLunas = RekamMedis::doesntHave('pembayaran')
+                                       ->with(['pasien.user', 'dokter.user'])
+                                       ->orderBy('tanggal', 'desc')
+                                       ->get();
 
-        // 2. Ambil Riwayat Transaksi (Sudah Bayar)
-        $riwayat = Pembayaran::with('rekamMedis.pasien.user')
-                    ->latest()
-                    ->limit(20)
-                    ->get();
+        // 2. Ambil data Pembayaran yang SUDAH ada (Riwayat Lunas)
+        $riwayatPembayaran = Pembayaran::with(['rekamMedis.pasien.user'])
+                                       ->orderBy('created_at', 'desc')
+                                       ->get();
 
-        // Tentukan view berdasarkan role (untuk konsistensi)
-        $viewName = Auth::user()->role === 'admin' ? 'admin.pembayaran.index' : 'perawat.pembayaran.index';
-        
-        return view($viewName, compact('belumBayar', 'riwayat'));
+        return view('admin.pembayaran.index', compact('tagihanBelumLunas', 'riwayatPembayaran'));
     }
 
-    // Tampilkan form pembayaran (Kasir/Admin)
-    public function create($id)
+    // PROSES BAYAR (Update/Simpan Pembayaran)
+    public function update(Request $request, $id)
     {
-        // Cari data rekam medis berdasarkan ID
-        $rekamMedis = RekamMedis::with(['pasien.user', 'dokter.user'])->findOrFail($id);
-        
-        // Tentukan view berdasarkan role
-        $viewName = Auth::user()->role === 'admin' ? 'admin.pembayaran.create' : 'perawat.pembayaran.create';
-        
-        return view($viewName, compact('rekamMedis'));
-    }
-
-    // [STORE] Proses penyimpanan pembayaran (Kasir/Admin)
-    public function store(Request $request)
-    {
-        // 1. Validasi Input (Menggunakan nama field dari Canvas)
+        // Validasi input biaya
         $request->validate([
-            'rekam_medis_id' => 'required|exists:rekam_medis,id',
-            'total_biaya' => 'required|numeric|min:0', // FIX: Validasi total biaya
-            'metode_pembayaran' => 'required|string', // FIX: Validasi metode pembayaran
-            'uang_diterima' => 'nullable|numeric', // Opsional, untuk hitung kembalian
+            'total_biaya' => 'required|numeric|min:0',
         ]);
 
-        // 2. Simpan ke Database
-        Pembayaran::create([
-            'rekam_medis_id' => $request->rekam_medis_id,
-            'total_biaya' => $request->total_biaya,
-            'metode_pembayaran' => $request->metode_pembayaran,
-            'status' => 'Lunas', // Default lunas saat dibuat
-            // uang_diterima TIDAK perlu disimpan jika tidak ada kolomnya di tabel pembayaran
-        ]);
+        DB::transaction(function () use ($request, $id) {
+            // $id di sini adalah ID Rekam Medis yang mau dibayar
+            
+            // Generate Nomor Transaksi Unik (TRX-TahunBulanDetik-Random)
+            $noTransaksi = 'TRX-' . date('YmdHis') . '-' . rand(100, 999);
 
-        // 3. Kembali ke halaman kasir yang sesuai
-        $redirectRoute = Auth::user()->role === 'admin' ? 'admin.pembayaran.index' : 'perawat.pembayaran.index';
-        
-        return redirect()->route($redirectRoute)->with('success', 'Pembayaran berhasil diproses!');
+            // Simpan ke tabel pembayarans
+            Pembayaran::create([
+                'rekam_medis_id' => $id,
+                'no_transaksi'   => $noTransaksi,
+                'total_biaya'    => $request->total_biaya,
+                'status'         => 'lunas', // Langsung lunas saat dibayar di kasir
+                'metode_pembayaran' => 'tunai', // Default tunai
+            ]);
+        });
+
+        return back()->with('success', 'Pembayaran berhasil diproses!');
     }
-    
-    // Method untuk mencetak kwitansi
-    public function print($id)
+
+    // CETAK STRUK
+    public function cetakStruk($id)
     {
-        // Logika cetak kwitansi akan ada di sini
-        return "Cetak Kwitansi ID: {$id}";
+        // HAPUS 'rekamMedis.resepObat' dari dalam array with() biar tidak error
+        $pembayaran = Pembayaran::with(['rekamMedis.pasien.user', 'rekamMedis.dokter.user'])
+                                ->findOrFail($id);
+        
+        return view('admin.pembayaran.cetak', compact('pembayaran'));
     }
 }
