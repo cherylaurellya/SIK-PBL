@@ -25,7 +25,7 @@ class UserRoleSeeder extends Seeder
                 ['email' => 'admin@klinik.com'],
                 [
                     'name' => 'Admin Utama',
-                    'password' => Hash::make('password'), // ganti dengan password aman
+                    'password' => Hash::make('password'), 
                     'role' => 'admin',
                 ]
             );
@@ -41,8 +41,8 @@ class UserRoleSeeder extends Seeder
                 ]
             );
             $dokterUser->dokter()->firstOrCreate([
-                'spesialisasi' => 'Umum',       // sesuai migration
-                'no_str' => '1234567890',       // sesuai migration
+                'spesialisasi' => 'Umum',       
+                'no_str' => '1234567890',      
             ]);
 
             // 3. Buat Perawat
