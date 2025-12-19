@@ -4,31 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // Diperlukan untuk mengambil data dokter yang sedang login
+use Illuminate\Support\Facades\Auth; 
 use App\Models\Dokter; 
 use App\Models\User;
-use App\Models\RekamMedis; // Diperlukan untuk melihat riwayat/antrian
-use App\Models\JadwalPraktik; // Diperlukan untuk melihat jadwal
-use App\Models\Pasien; // Diperlukan untuk data pasien
+use App\Models\RekamMedis; 
+use App\Models\JadwalPraktik; 
+use App\Models\Pasien; 
 use Illuminate\Support\Facades\Hash; 
 use Illuminate\Support\Facades\DB; 
-use Carbon\Carbon; // Diperlukan untuk filter tanggal
+use Carbon\Carbon; 
 
 class DokterController extends Controller
 {
     
     public function dashboard()
     {
-        // 1. Ambil ID Dokter yang sedang login
         $user = Auth::user();
-        // Asumsi relasi user->dokter ada
+        
         $dokter = Dokter::where('user_id', $user->id)->first(); 
 
         if (!$dokter) {
             abort(403, 'Data dokter tidak ditemukan.');
         }
 
-        // 2. Data Statistik (Pasien yang sudah ditangani)
         $totalPasienDitangani = RekamMedis::where('dokter_id', $dokter->id)->count();
 
     
@@ -43,7 +41,6 @@ class DokterController extends Controller
         
         $totalAntrian = $antrianPasien->count();
 
-        // 4. Jadwal Dokter Hari Ini
         $hariIni = Carbon::now()->locale('id')->dayName; 
         $jadwalHariIni = JadwalPraktik::where('dokter_id', $dokter->id)
                                     ->where('hari', $hariIni)
@@ -59,13 +56,11 @@ class DokterController extends Controller
         return view('admin.dokter.index', compact('dokters'));
     }
 
-    // Menampilkan form tambah dokter
     public function create()
     {
         return view('admin.dokter.create');
     }
     
-    // Menyimpan data dokter baru
     public function store(Request $request)
     {
         $request->validate([
@@ -78,7 +73,7 @@ class DokterController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1. Buat User Login
+            
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -86,7 +81,7 @@ class DokterController extends Controller
                 'role' => 'dokter',
             ]);
 
-            // 2. Buat Data Detail Dokter
+            
             Dokter::create([
                 'user_id' => $user->id,
                 'spesialisasi' => $request->spesialisasi,
@@ -103,14 +98,14 @@ class DokterController extends Controller
         }
     }
 
-    // Menampilkan form edit dokter
+    
     public function edit($id)
     {
         $dokter = Dokter::with('user')->findOrFail($id);
         return view('admin.dokter.edit', compact('dokter'));
     }
 
-    // Memperbarui data dokter
+    
     public function update(Request $request, $id)
     {
         $dokter = Dokter::findOrFail($id);
@@ -125,14 +120,14 @@ class DokterController extends Controller
 
         DB::beginTransaction();
         try {
-            // Update User Login Data
+            
             $dataUser = ['name' => $request->name, 'email' => $request->email];
             if ($request->filled('password')) {
                 $dataUser['password'] = Hash::make($request->password);
             }
             $dokter->user->update($dataUser);
 
-            // Update Detail Dokter Data
+            
             $dokter->update([
                 'spesialisasi' => $request->spesialisasi,
                 'no_str' => $request->no_str,
@@ -147,7 +142,6 @@ class DokterController extends Controller
         }
     }
     
-    // Menghapus data dokter dan user terkait
     public function destroy($id)
     {
         $dokter = Dokter::findOrFail($id);
